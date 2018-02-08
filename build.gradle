@@ -1,7 +1,6 @@
 plugins {
     id "java"
     id "idea"
-    id "org.flywaydb.flyway" version "5.0.6"
 }
 
 group 'ds.google.adwords.com'
@@ -14,7 +13,6 @@ repositories {
 }
 
 dependencies {
-    compile("com.oracle:ojdbc6:11.2.0.4")
     compile group: 'com.google.api-ads', name: 'adwords-axis', version: '3.10.0'
     compile group: 'com.google.oauth-client', name: 'google-oauth-client-java6', version: '1.23.0'
     compile group: 'com.google.oauth-client', name: 'google-oauth-client-jetty', version: '1.23.0'
@@ -37,12 +35,3 @@ def loadConfiguration() {
 
 def props = new Properties()
 file("$config.instanceProperties").withInputStream { props.load(it) }
-
-flyway {
-    url = props.getProperty("flyway.url")
-    driver = props.getProperty("flyway.driver")
-    user = props.getProperty("flyway.user")
-    password = props.getProperty("flyway.password")
-    table = props.getProperty("flyway.table")
-    baselineOnMigrate = props.getProperty("flyway.baselineOnMigrate")
-}
