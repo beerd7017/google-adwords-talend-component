@@ -19,13 +19,12 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.Clock;
 import com.google.api.client.util.store.FileDataStoreFactory;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
 import java.util.zip.GZIPInputStream;
-import org.apache.log4j.Logger;
 
 
 public class AdWordsReport {
@@ -284,7 +283,7 @@ public class AdWordsReport {
             this.buildAWQLFromReportDefinition();
         }
 
-       if (!this.sendReportAsAWQL && !this.useAWQL) {
+        if (!this.sendReportAsAWQL && !this.useAWQL) {
             this.setupReportName();
             this.setupReportDefinition();
             this.response = downloader.downloadReport(this.reportDefinition);

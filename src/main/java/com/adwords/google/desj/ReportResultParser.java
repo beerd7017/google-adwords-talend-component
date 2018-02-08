@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ReportResultParser {
+    private static final String DATE_DIMENSION = "Day";
     private List<String> requestedDimensionNames = new ArrayList();
     private List<String> requestedMetricNames = new ArrayList();
     private BufferedReader br = null;
@@ -19,7 +20,6 @@ public class ReportResultParser {
     private int currentNormalizedValueIndex = 0;
     private List<DimensionValue> currentResultRowDimensionValues;
     private Date currentDate;
-    private static final String DATE_DIMENSION = "Day";
     private boolean excludeDate = false;
     private List<MetricValue> currentResultRowMetricValues;
     private int countDimensions = 0;
@@ -41,6 +41,33 @@ public class ReportResultParser {
     private boolean allowEnclosureInText = true;
 
     public ReportResultParser() {
+    }
+
+    private static final char[] getChars(String s) {
+        return s == null ? new char[0] : s.toCharArray();
+    }
+
+    private static final boolean startsWith(char[] data, char[] search, int startPos) {
+        if (search.length != 0 && data.length != 0) {
+            if (startPos >= 0 && startPos <= data.length - search.length) {
+                int searchPos = 0;
+                int count = search.length;
+                int var5 = startPos;
+
+                do {
+                    --count;
+                    if (count < 0) {
+                        return true;
+                    }
+                } while (data[var5++] == search[searchPos++]);
+
+                return false;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     public void initialize(InputStream in) throws Exception {
@@ -87,7 +114,7 @@ public class ReportResultParser {
             String[] arr$ = metricArray;
             int len$ = metricArray.length;
 
-            for(int i$ = 0; i$ < len$; ++i$) {
+            for (int i$ = 0; i$ < len$; ++i$) {
                 String metric = arr$[i$];
                 this.requestedMetricNames.add(metric);
             }
@@ -108,7 +135,7 @@ public class ReportResultParser {
             String[] arr$ = dimensionArray;
             int len$ = dimensionArray.length;
 
-            for(int i$ = 0; i$ < len$; ++i$) {
+            for (int i$ = 0; i$ < len$; ++i$) {
                 String dimension = arr$[i$];
                 this.requestedDimensionNames.add(dimension.trim());
             }
@@ -147,7 +174,7 @@ public class ReportResultParser {
         this.lastPosDel = 0;
         this.lastDelimiterIndex = 0;
 
-        while(true) {
+        while (true) {
             String column = this.extractDataAtDelimiter(pos);
             if (column == null || column.isEmpty()) {
                 return;
@@ -184,8 +211,8 @@ public class ReportResultParser {
 
             String metric;
             int pos;
-            for(int i = 0; i < this.requestedDimensionNames.size(); ++i) {
-                metric = (String)this.requestedDimensionNames.get(i);
+            for (int i = 0; i < this.requestedDimensionNames.size(); ++i) {
+                metric = (String) this.requestedDimensionNames.get(i);
                 if (this.configurePositionByHeaderLine) {
                     pos = this.headers.indexOf(metric.toLowerCase());
                     if (pos == -1) {
@@ -201,8 +228,8 @@ public class ReportResultParser {
             if (this.requestedMetricNames != null) {
                 Iterator i$ = this.requestedMetricNames.iterator();
 
-                while(i$.hasNext()) {
-                    metric = (String)i$.next();
+                while (i$.hasNext()) {
+                    metric = (String) i$.next();
                     pos = this.headers.indexOf(metric.toLowerCase());
                     if (pos == -1) {
                         throw new Exception("Metric " + metric + " not found in header line!");
@@ -228,7 +255,7 @@ public class ReportResultParser {
         if (this.currentNormalizedValueIndex == 0) {
             throw new IllegalStateException("Call nextNormalizedRecord() at first!");
         } else {
-            return this.currentNormalizedValueIndex <= this.currentResultRowDimensionValues.size() ? (DimensionValue)this.currentResultRowDimensionValues.get(this.currentNormalizedValueIndex - 1) : null;
+            return this.currentNormalizedValueIndex <= this.currentResultRowDimensionValues.size() ? (DimensionValue) this.currentResultRowDimensionValues.get(this.currentNormalizedValueIndex - 1) : null;
         }
     }
 
@@ -240,7 +267,7 @@ public class ReportResultParser {
         if (this.currentNormalizedValueIndex == 0) {
             throw new IllegalStateException("Call nextNormalizedRecord() at first!");
         } else {
-            return this.currentNormalizedValueIndex <= this.currentResultRowMetricValues.size() ? (MetricValue)this.currentResultRowMetricValues.get(this.currentNormalizedValueIndex - 1) : null;
+            return this.currentNormalizedValueIndex <= this.currentResultRowMetricValues.size() ? (MetricValue) this.currentResultRowMetricValues.get(this.currentNormalizedValueIndex - 1) : null;
         }
     }
 
@@ -281,10 +308,10 @@ public class ReportResultParser {
         this.currentDate = null;
 
         ArrayList oneRowDimensionValues;
-        for(oneRowDimensionValues = new ArrayList(); index < this.requestedDimensionNames.size(); ++index) {
+        for (oneRowDimensionValues = new ArrayList(); index < this.requestedDimensionNames.size(); ++index) {
             DimensionValue dm = new DimensionValue();
-            dm.name = (String)this.requestedDimensionNames.get(index);
-            dm.value = (String)oneRow.get(index);
+            dm.name = (String) this.requestedDimensionNames.get(index);
+            dm.value = (String) oneRow.get(index);
             dm.rowNum = this.currentPlainRowIndex;
             if (this.excludeDate && "Day".equalsIgnoreCase(dm.name.trim().toLowerCase())) {
                 try {
@@ -308,11 +335,11 @@ public class ReportResultParser {
         int index = 0;
 
         ArrayList oneRowMetricValues;
-        for(oneRowMetricValues = new ArrayList(); index < this.requestedMetricNames.size(); ++index) {
+        for (oneRowMetricValues = new ArrayList(); index < this.requestedMetricNames.size(); ++index) {
             MetricValue mv = new MetricValue();
-            mv.name = (String)this.requestedMetricNames.get(index);
+            mv.name = (String) this.requestedMetricNames.get(index);
             mv.rowNum = this.currentPlainRowIndex;
-            String valueStr = (String)oneRow.get(index + this.countDimensions);
+            String valueStr = (String) oneRow.get(index + this.countDimensions);
 
             try {
                 mv.value = Util.convertToDouble(valueStr, Locale.ENGLISH.toString());
@@ -325,10 +352,6 @@ public class ReportResultParser {
         this.currentResultRowMetricValues = oneRowMetricValues;
         this.setMaxCountNormalizedValues(this.currentResultRowMetricValues.size());
         return oneRowMetricValues;
-    }
-
-    private static final char[] getChars(String s) {
-        return s == null ? new char[0] : s.toCharArray();
     }
 
     private String extractDataAtDelimiter(int fieldNum) throws Exception {
@@ -347,7 +370,7 @@ public class ReportResultParser {
             int currPos = this.lastPosDel;
             StringBuilder sb = new StringBuilder();
 
-            while(currPos < this.data.length && countDelimiters <= fieldNum) {
+            while (currPos < this.data.length && countDelimiters <= fieldNum) {
                 if (atEnclosureStart) {
                     atEnclosureStart = false;
                     fieldStartsWithEnclosure = true;
@@ -398,7 +421,7 @@ public class ReportResultParser {
                         sb.setLength(0);
                     }
 
-                    for(continueField = false; currPos < this.data.length; ++currPos) {
+                    for (continueField = false; currPos < this.data.length; ++currPos) {
                         if (fieldStartsWithEnclosure) {
                             atEnclosureStop = startsWith(this.data, this.enclosureChars, currPos);
                             if (atEnclosureStop) {
@@ -426,29 +449,6 @@ public class ReportResultParser {
             this.lastPosDel = currPos;
             this.lastDelimiterIndex = fieldNum + 1;
             return value;
-        }
-    }
-
-    private static final boolean startsWith(char[] data, char[] search, int startPos) {
-        if (search.length != 0 && data.length != 0) {
-            if (startPos >= 0 && startPos <= data.length - search.length) {
-                int searchPos = 0;
-                int count = search.length;
-                int var5 = startPos;
-
-                do {
-                    --count;
-                    if (count < 0) {
-                        return true;
-                    }
-                } while(data[var5++] == search[searchPos++]);
-
-                return false;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
         }
     }
 

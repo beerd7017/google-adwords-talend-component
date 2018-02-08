@@ -19,7 +19,7 @@ public class Util {
         }
 
         String key = localeStr + "-" + Thread.currentThread().getName();
-        NumberFormat nf = (NumberFormat)numberformatMap.get(key);
+        NumberFormat nf = (NumberFormat) numberformatMap.get(key);
         if (nf == null) {
             Locale locale = new Locale(localeStr);
             nf = NumberFormat.getInstance(locale);
@@ -33,7 +33,7 @@ public class Util {
         List<Object> resultList = new ArrayList();
         StringTokenizer st = new StringTokenizer(valuesSeparated, delimiter);
 
-        while(st.hasMoreElements()) {
+        while (st.hasMoreElements()) {
             String value = st.nextToken();
             resultList.add(convertToDatatype(value, dataType, pattern));
         }

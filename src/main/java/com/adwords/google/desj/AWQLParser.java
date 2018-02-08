@@ -10,12 +10,28 @@ public class AWQLParser {
     private String fields = null;
     private List<String> fieldList = null;
     private String reportType = null;
-    private static final String SELECT = "select";
-    private static final String FROM = "from";
-    private static final String WHERE = "where";
-    private static final String DURING = "during";
 
     public AWQLParser() {
+    }
+
+    public static String buildRequestFormat(String awql) {
+        awql = awql.replace('\n', ' ');
+        awql = awql.replace('\r', ' ');
+        awql = awql.replace('\t', ' ');
+        awql = reduceMultipleSpacesToOne(awql);
+        awql = awql.replace(", ", ",");
+        awql = awql.replace(" ,", ",");
+        return awql;
+    }
+
+    private static String reduceMultipleSpacesToOne(String text) {
+        text = text.trim();
+
+        for (int pos = 0; pos != -1; pos = text.indexOf("  ")) {
+            text = text.replace("  ", " ");
+        }
+
+        return text;
     }
 
     public AWQLParser parse(String awql) {
@@ -47,26 +63,6 @@ public class AWQLParser {
         }
     }
 
-    public static String buildRequestFormat(String awql) {
-        awql = awql.replace('\n', ' ');
-        awql = awql.replace('\r', ' ');
-        awql = awql.replace('\t', ' ');
-        awql = reduceMultipleSpacesToOne(awql);
-        awql = awql.replace(", ", ",");
-        awql = awql.replace(" ,", ",");
-        return awql;
-    }
-
-    private static String reduceMultipleSpacesToOne(String text) {
-        text = text.trim();
-
-        for(int pos = 0; pos != -1; pos = text.indexOf("  ")) {
-            text = text.replace("  ", " ");
-        }
-
-        return text;
-    }
-
     private void findFields() {
         int pos0 = this.awql.toLowerCase().indexOf("select");
         if (pos0 == -1) {
@@ -91,7 +87,7 @@ public class AWQLParser {
         this.fieldList = new ArrayList();
         StringTokenizer st = new StringTokenizer(this.fields, ",");
 
-        while(st.hasMoreTokens()) {
+        while (st.hasMoreTokens()) {
             String field = st.nextToken().trim();
             this.fieldList.add(field);
         }
