@@ -55,7 +55,7 @@ public class AdWordsReport {
     private String endDateStr = null;
     private boolean useAWQL = false;
     private String awql = null;
-    private int reportDownloadTimeout = 3000;
+
     private String downloadDir = null;
     private String reportName = null;
     private String reportDownloadFilePath = null;
@@ -71,12 +71,12 @@ public class AdWordsReport {
     private InputStream responseInputStream;
 
     public AdWordsReport() {
-        this.downloadFormat = DownloadFormat.CSV;
-        this.httpStatus = 0;
-        this.response = null;
-        this.sendReportAsAWQL = false;
-        this.awqlWhereClause = null;
-        this.responseInputStream = null;
+        downloadFormat = DownloadFormat.CSV;
+        httpStatus = 0;
+        response = null;
+        sendReportAsAWQL = false;
+        awqlWhereClause = null;
+        responseInputStream = null;
     }
 
     public static void putIntoCache(String key, AdWordsReport gai) {
@@ -84,10 +84,10 @@ public class AdWordsReport {
     }
 
     public static AdWordsReport getFromCache(String key) {
-        AdWordsReport adr = (AdWordsReport) clientCache.get(key);
-        if (adr != null) {
-            adr.reset();
-            return adr;
+        AdWordsReport adWordsReport = (AdWordsReport) clientCache.get(key);
+        if (adWordsReport != null) {
+            adWordsReport.reset();
+            return adWordsReport;
         } else {
             return null;
         }
@@ -134,30 +134,30 @@ public class AdWordsReport {
     }
 
     public void reset() {
-        this.awql = null;
-        this.reportType = null;
-        this.fields = null;
-        this.startDateStr = null;
-        this.endDateStr = null;
-        this.useAWQL = false;
-        this.downloadDir = null;
-        this.reportName = null;
-        this.reportDownloadFilePath = null;
-        this.reportDefinition = null;
-        this.downloadFormat = DownloadFormat.CSV;
-        this.httpStatus = 0;
-        this.response = null;
-        this.awqlWhereClause = null;
-        this.responseInputStream = null;
+        awql = null;
+        reportType = null;
+        fields = null;
+        startDateStr = null;
+        endDateStr = null;
+        useAWQL = false;
+        downloadDir = null;
+        reportName = null;
+        reportDownloadFilePath = null;
+        reportDefinition = null;
+        downloadFormat = DownloadFormat.CSV;
+        httpStatus = 0;
+        response = null;
+        awqlWhereClause = null;
+        responseInputStream = null;
     }
 
     private Credential authorizeWithServiceAccount() throws Exception {
-        if (this.keyFile == null) {
+        if (keyFile == null) {
             throw new Exception("KeyFile not set!");
-        } else if (!this.keyFile.canRead()) {
-            throw new IOException("keyFile:" + this.keyFile.getAbsolutePath() + " is not readable");
-        } else if (this.serviceAccountIdEmail != null && !this.serviceAccountIdEmail.isEmpty()) {
-            return (new Builder()).setTransport(this.HTTP_TRANSPORT).setJsonFactory(this.JSON_FACTORY).setServiceAccountId(this.serviceAccountIdEmail).setServiceAccountScopes(Arrays.asList("https://www.googleapis.com/auth/adwords")).setServiceAccountPrivateKeyFromP12File(this.keyFile).setServiceAccountUser(this.userEmail).setClock(new Clock() {
+        } else if (!keyFile.canRead()) {
+            throw new IOException("keyFile:" + keyFile.getAbsolutePath() + " is not readable");
+        } else if (serviceAccountIdEmail != null && !serviceAccountIdEmail.isEmpty()) {
+            return (new Builder()).setTransport(HTTP_TRANSPORT).setJsonFactory(JSON_FACTORY).setServiceAccountId(serviceAccountIdEmail).setServiceAccountScopes(Arrays.asList("https://www.googleapis.com/auth/adwords")).setServiceAccountPrivateKeyFromP12File(keyFile).setServiceAccountUser(userEmail).setClock(new Clock() {
                 public long currentTimeMillis() {
                     return System.currentTimeMillis() - AdWordsReport.this.timeMillisOffsetToPast;
                 }
@@ -168,38 +168,38 @@ public class AdWordsReport {
     }
 
     private Credential authorizeWithClientSecretAndRefreshToken() throws Exception {
-        this.info("Authorise with Client-ID for installed application with existing refresh token ....");
+        info("Authorise with Client-ID for installed application with existing refresh token ....");
         Credential oAuth2Credential = null;
-        if (this.usePropertyFile) {
-            this.info("... use property file: " + this.adwordsPropertyFilePath);
-            oAuth2Credential = (new com.google.api.ads.common.lib.auth.OfflineCredentials.Builder()).forApi(Api.ADWORDS).fromFile(this.adwordsPropertyFilePath).build().generateCredential();
+        if (usePropertyFile) {
+            info("... use property file: " + adwordsPropertyFilePath);
+            oAuth2Credential = (new com.google.api.ads.common.lib.auth.OfflineCredentials.Builder()).forApi(Api.ADWORDS).fromFile(adwordsPropertyFilePath).build().generateCredential();
         } else {
-            this.info("... set properties directly");
-            if (this.clientId == null) {
+            info("... set properties directly");
+            if (clientId == null) {
                 throw new IllegalStateException("Client-ID not set or null");
             }
 
-            if (this.clientSecretFile == null) {
+            if (clientSecretFile == null) {
                 throw new IllegalStateException("Client-ID not set or null");
             }
 
-            oAuth2Credential = (new com.google.api.ads.common.lib.auth.OfflineCredentials.Builder()).forApi(Api.ADWORDS).withClientSecrets(this.clientId, this.clientSecret).withHttpTransport(this.HTTP_TRANSPORT).withRefreshToken(this.refreshToken).build().generateCredential();
+            oAuth2Credential = (new com.google.api.ads.common.lib.auth.OfflineCredentials.Builder()).forApi(Api.ADWORDS).withClientSecrets(clientId, clientSecret).withHttpTransport(HTTP_TRANSPORT).withRefreshToken(refreshToken).build().generateCredential();
         }
 
         return oAuth2Credential;
     }
 
     private Credential authorizeWithClientSecret() throws Exception {
-        this.info("Authorise with Client-ID for installed application with using credential data store....");
-        if (this.clientSecretFile == null) {
+        info("Authorise with Client-ID for installed application with using credential data store....");
+        if (clientSecretFile == null) {
             throw new IllegalStateException("client secret file is not set");
         } else {
-            File secretFile = new File(this.clientSecretFile);
+            File secretFile = new File(clientSecretFile);
             if (!secretFile.exists()) {
                 throw new Exception("Client secret file:" + secretFile.getAbsolutePath() + " does not exists or is not readable.");
             } else {
                 Reader reader = new FileReader(secretFile);
-                GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(this.JSON_FACTORY, reader);
+                GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, reader);
 
                 try {
                     reader.close();
@@ -213,17 +213,17 @@ public class AdWordsReport {
                     if (!credentialDataStoreDirFile.exists() && !credentialDataStoreDirFile.mkdirs()) {
                         throw new Exception("Credentedial data dir does not exists or cannot created:" + credentialDataStoreDir);
                     } else {
-                        if (this.debug) {
-                            this.info("Credential data store dir:" + credentialDataStoreDir);
+                        if (debug) {
+                            info("Credential data store dir:" + credentialDataStoreDir);
                         }
 
                         FileDataStoreFactory fdsf = new FileDataStoreFactory(credentialDataStoreDirFile);
-                        GoogleAuthorizationCodeFlow flow = (new com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow.Builder(this.HTTP_TRANSPORT, this.JSON_FACTORY, clientSecrets, Arrays.asList("https://www.googleapis.com/auth/adwords"))).setDataStoreFactory(fdsf).setClock(new Clock() {
+                        GoogleAuthorizationCodeFlow flow = (new com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, Arrays.asList("https://www.googleapis.com/auth/adwords"))).setDataStoreFactory(fdsf).setClock(new Clock() {
                             public long currentTimeMillis() {
                                 return System.currentTimeMillis() - AdWordsReport.this.timeMillisOffsetToPast;
                             }
                         }).build();
-                        return (new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver())).authorize(this.userEmail);
+                        return (new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver())).authorize(userEmail);
                     }
                 } else {
                     throw new Exception("The client secret file does not contains the credentials!");
@@ -234,129 +234,124 @@ public class AdWordsReport {
 
     public void initializeAdWordsSession() throws Exception {
         Credential oAuth2Credential = null;
-        if (this.useServiceAccount) {
-            oAuth2Credential = this.authorizeWithServiceAccount();
+        if (useServiceAccount) {
+            oAuth2Credential = authorizeWithServiceAccount();
         } else {
-            if (!this.useClientId) {
+            if (!useClientId) {
                 throw new IllegalStateException("Not authorized. Please choose an authorization method!");
             }
 
-            if (this.refreshToken == null && !this.usePropertyFile) {
-                oAuth2Credential = this.authorizeWithClientSecret();
+            if (refreshToken == null && !usePropertyFile) {
+                oAuth2Credential = authorizeWithClientSecret();
             } else {
-                oAuth2Credential = this.authorizeWithClientSecretAndRefreshToken();
+                oAuth2Credential = authorizeWithClientSecretAndRefreshToken();
             }
         }
 
         if (oAuth2Credential == null) {
-            this.error("Authentication failed. Check the Exception thrown before.", (Exception) null);
+            error("Authentication failed. Check the Exception thrown before.", (Exception) null);
         } else {
             oAuth2Credential.refreshToken();
-            if (this.usePropertyFile) {
-                this.session = (new com.google.api.ads.adwords.lib.client.AdWordsSession.Builder()).fromFile(this.adwordsPropertyFilePath).withOAuth2Credential(oAuth2Credential).build();
+            if (usePropertyFile) {
+                session = (new com.google.api.ads.adwords.lib.client.AdWordsSession.Builder()).fromFile(adwordsPropertyFilePath).withOAuth2Credential(oAuth2Credential).build();
             } else {
-                if (this.clientCustomerId == null) {
+                if (clientCustomerId == null) {
                     throw new IllegalStateException("clientCustomerId mus be set");
                 }
 
-                this.session = (new com.google.api.ads.adwords.lib.client.AdWordsSession.Builder()).withClientCustomerId(this.clientCustomerId).withDeveloperToken(this.developerToken).withUserAgent(this.userAgent).withOAuth2Credential(oAuth2Credential).build();
+                session = (new com.google.api.ads.adwords.lib.client.AdWordsSession.Builder()).withClientCustomerId(clientCustomerId).withDeveloperToken(developerToken).withUserAgent(userAgent).withOAuth2Credential(oAuth2Credential).build();
             }
 
         }
     }
 
     public void executeQuery() throws Exception {
-        ReportingConfiguration reportingConfiguration = (new com.google.api.ads.adwords.lib.client.reporting.ReportingConfiguration.Builder()).skipReportHeader(true).skipReportSummary(!this.deliverTotalsDataset).build();
+        ReportingConfiguration reportingConfiguration = (new com.google.api.ads.adwords.lib.client.reporting.ReportingConfiguration.Builder()).skipReportHeader(true).skipReportSummary(!deliverTotalsDataset).build();
+        int reportDownloadTimeout = 3000;
         session.setReportingConfiguration(reportingConfiguration);
         session.setValidateOnly(true);
-        ReportDownloader downloader = new ReportDownloader(this.session);
-        downloader.setReportDownloadTimeout(this.reportDownloadTimeout);
-        if (this.sendReportAsAWQL && !this.useAWQL) {
-            if (this.fields == null) {
+        ReportDownloader downloader = new ReportDownloader(session);
+        downloader.setReportDownloadTimeout(reportDownloadTimeout);
+        if (sendReportAsAWQL && !useAWQL) {
+            if (fields == null) {
                 throw new IllegalStateException("No fields has been set!");
             }
-
-            if (this.reportType == null) {
+            if (reportType == null) {
                 throw new IllegalStateException("No reportType has been set!");
             }
-
-            this.buildAWQLFromReportDefinition();
+            buildAWQLFromReportDefinition();
         }
 
-        if (!this.sendReportAsAWQL && !this.useAWQL) {
-            this.setupReportName();
-            this.setupReportDefinition();
-            this.response = downloader.downloadReport(this.reportDefinition);
+        if (!sendReportAsAWQL && !useAWQL) {
+            setupReportName();
+            setupReportDefinition();
+            response = downloader.downloadReport(reportDefinition);
         } else {
-            if (this.awql == null) {
+            if (awql == null) {
                 throw new IllegalStateException("No AWQL has been set!");
             }
-
-            if (!this.sendReportAsAWQL) {
+            if (!sendReportAsAWQL) {
                 AWQLParser parser = new AWQLParser();
-                parser.parse(this.awql);
-                this.reportType = parser.getReportType();
-                this.fields = parser.getFieldsAsString();
+                parser.parse(awql);
+                reportType = parser.getReportType();
+                fields = parser.getFieldsAsString();
             }
-
-            String awqlRequestFormat = AWQLParser.buildRequestFormat(this.awql);
-            if (this.debug) {
-                this.info("AWQL request formatted:" + awqlRequestFormat);
+            String awqlRequestFormat = AWQLParser.buildRequestFormat(awql);
+            if (debug) {
+                info("AWQL request formatted:" + awqlRequestFormat);
             }
-
-            this.setupReportName();
-            this.response = downloader.downloadReport(awqlRequestFormat, this.downloadFormat);
+            setupReportName();
+            response = downloader.downloadReport(awqlRequestFormat, downloadFormat);
         }
-
-        this.responseInputStream = this.response.getInputStream();
+        responseInputStream = response.getInputStream();
     }
 
     public void downloadAsFile() throws Exception {
-        this.buildDownloadFile();
-        this.info("Download report to: " + this.reportDownloadFilePath);
-        this.httpStatus = this.response.getHttpStatus();
-        this.response.saveToFile(this.reportDownloadFilePath);
-        this.info("Finished.");
+        buildDownloadFile();
+        info("Download report to: " + reportDownloadFilePath);
+        httpStatus = response.getHttpStatus();
+        response.saveToFile(reportDownloadFilePath);
+        info("Finished.");
     }
 
     private File buildDownloadFile() {
-        if (this.reportDownloadFilePath != null) {
-            File df = new File(this.reportDownloadFilePath);
+        if (reportDownloadFilePath != null) {
+            File df = new File(reportDownloadFilePath);
             if (!df.getParentFile().exists()) {
                 df.getParentFile().mkdirs();
             }
 
             return df;
-        } else if (this.downloadDir == null) {
+        } else if (downloadDir == null) {
             throw new IllegalStateException("Download dir not set!");
-        } else if (this.reportType == null) {
+        } else if (reportType == null) {
             throw new IllegalStateException("Report-Type not set!");
-        } else if (this.reportName == null) {
+        } else if (reportName == null) {
             throw new IllegalStateException("Report-Name not set!");
-        } else if (this.downloadFormat == null) {
+        } else if (downloadFormat == null) {
             throw new IllegalStateException("Download format not set!");
         } else {
             String fileExtension = null;
-            if (this.downloadFormat == DownloadFormat.CSV) {
+            if (downloadFormat == DownloadFormat.CSV) {
                 fileExtension = ".csv";
-            } else if (this.downloadFormat == DownloadFormat.CSVFOREXCEL) {
+            } else if (downloadFormat == DownloadFormat.CSVFOREXCEL) {
                 fileExtension = ".bom.csv";
-            } else if (this.downloadFormat == DownloadFormat.TSV) {
+            } else if (downloadFormat == DownloadFormat.TSV) {
                 fileExtension = ".tsv";
-            } else if (this.downloadFormat == DownloadFormat.XML) {
+            } else if (downloadFormat == DownloadFormat.XML) {
                 fileExtension = ".xml";
-            } else if (this.downloadFormat == DownloadFormat.GZIPPED_CSV) {
+            } else if (downloadFormat == DownloadFormat.GZIPPED_CSV) {
                 fileExtension = ".csv.gz";
-            } else if (this.downloadFormat == DownloadFormat.GZIPPED_XML) {
+            } else if (downloadFormat == DownloadFormat.GZIPPED_XML) {
                 fileExtension = ".xml.gz";
             }
 
-            File df = new File(this.downloadDir, this.reportName + fileExtension);
+            File df = new File(downloadDir, reportName + fileExtension);
             if (!df.getParentFile().exists()) {
                 df.getParentFile().mkdirs();
             }
 
-            this.reportDownloadFilePath = df.getAbsolutePath();
+            reportDownloadFilePath = df.getAbsolutePath();
             return df;
         }
     }
@@ -364,74 +359,74 @@ public class AdWordsReport {
     private void buildAWQLFromReportDefinition() {
         StringBuilder sb = new StringBuilder();
         sb.append("select ");
-        sb.append(this.fields);
+        sb.append(fields);
         sb.append(" from ");
-        sb.append(this.reportType);
-        if (this.awqlWhereClause != null) {
+        sb.append(reportType);
+        if (awqlWhereClause != null) {
             sb.append(" where ");
-            sb.append(this.awqlWhereClause);
+            sb.append(awqlWhereClause);
         }
 
         sb.append(" during ");
-        sb.append(this.startDateStr);
+        sb.append(startDateStr);
         sb.append(",");
-        sb.append(this.endDateStr);
-        this.awql = sb.toString();
+        sb.append(endDateStr);
+        awql = sb.toString();
     }
 
     private ReportDefinition setupReportDefinition() {
-        if (isEmpty(this.startDateStr)) {
+        if (isEmpty(startDateStr)) {
             throw new IllegalStateException("Start date is not set");
-        } else if (isEmpty(this.endDateStr)) {
+        } else if (isEmpty(endDateStr)) {
             throw new IllegalStateException("End date is not set");
         } else {
             Selector selector = new Selector();
-            selector.getFields().addAll(this.buildFieldList());
+            selector.getFields().addAll(buildFieldList());
             DateRange dr = new DateRange();
-            dr.setMin(this.startDateStr);
-            dr.setMax(this.endDateStr);
+            dr.setMin(startDateStr);
+            dr.setMax(endDateStr);
             selector.setDateRange(dr);
-            this.reportDefinition = new ReportDefinition();
-            this.reportDefinition.setSelector(selector);
-            this.reportDefinition.setReportType(this.getReportDefinitionType());
-            this.reportDefinition.setReportName(this.reportName);
-            this.reportDefinition.setDateRangeType(ReportDefinitionDateRangeType.fromValue("CUSTOM_DATE"));
-            this.reportDefinition.setDownloadFormat(this.downloadFormat);
-            return this.reportDefinition;
+            reportDefinition = new ReportDefinition();
+            reportDefinition.setSelector(selector);
+            reportDefinition.setReportType(getReportDefinitionType());
+            reportDefinition.setReportName(reportName);
+            reportDefinition.setDateRangeType(ReportDefinitionDateRangeType.fromValue("CUSTOM_DATE"));
+            reportDefinition.setDownloadFormat(downloadFormat);
+            return reportDefinition;
         }
     }
 
     private String setupReportName() {
-        if (this.reportType == null) {
+        if (reportType == null) {
             throw new IllegalStateException("reportType cannot be null");
-        } else if (this.reportName != null) {
-            return this.reportName;
+        } else if (reportName != null) {
+            return reportName;
         } else {
-            if (this.awql != null) {
+            if (awql != null) {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
-                this.reportName = this.reportType + "#" + sdf.format(new Date());
+                reportName = reportType + "#" + sdf.format(new Date());
             } else {
-                this.reportName = this.reportType + "#" + this.startDateStr + "-" + this.endDateStr;
+                reportName = reportType + "#" + startDateStr + "-" + endDateStr;
             }
 
-            return this.reportName;
+            return reportName;
         }
     }
 
     private ReportDefinitionReportType getReportDefinitionType() {
-        if (this.reportType == null) {
+        if (reportType == null) {
             throw new IllegalStateException("The report-type must be set!");
         } else {
-            return ReportDefinitionReportType.fromValue(this.reportType);
+            return ReportDefinitionReportType.fromValue(reportType);
         }
     }
 
     private List<String> buildFieldList() {
-        if (this.fields == null) {
+        if (fields == null) {
             throw new IllegalStateException("Fields cannot be empty. Please specify the report fields!");
         } else {
             List<String> fieldList = new ArrayList();
-            StringTokenizer st = new StringTokenizer(this.fields, ",;|");
+            StringTokenizer st = new StringTokenizer(fields, ",;|");
 
             while (st.hasMoreTokens()) {
                 String field = st.nextToken().trim();
@@ -444,28 +439,28 @@ public class AdWordsReport {
 
     public void setStartDate(String startDate) {
         if (!isEmpty(startDate)) {
-            this.startDateStr = this.checkDate(startDate);
+            startDateStr = checkDate(startDate);
         }
 
     }
 
     public void setStartDate(Date startDate) {
         if (startDate != null) {
-            this.startDateStr = this.sdfDate.format(startDate);
+            startDateStr = sdfDate.format(startDate);
         }
 
     }
 
     public void setEndDate(String endDate) {
         if (!isEmpty(endDate)) {
-            this.endDateStr = this.checkDate(endDate);
+            endDateStr = checkDate(endDate);
         }
 
     }
 
     public void setEndDate(Date endDate) {
         if (endDate != null) {
-            this.endDateStr = this.sdfDate.format(endDate);
+            endDateStr = sdfDate.format(endDate);
         }
 
     }
@@ -480,47 +475,47 @@ public class AdWordsReport {
     }
 
     public String getReportDownloadFilePath() {
-        return this.reportDownloadFilePath;
+        return reportDownloadFilePath;
     }
 
     public void setReportDownloadFilePath(String reportDownloadFilePath) {
         if (!isEmpty(reportDownloadFilePath)) {
-            this.reportDownloadFilePath = reportDownloadFilePath;
+            reportDownloadFilePath = reportDownloadFilePath;
         }
 
     }
 
     public void setDeveloperToken(String developerToken) {
         if (!isEmpty(developerToken)) {
-            this.developerToken = developerToken;
+            developerToken = developerToken;
         }
 
     }
 
     public void setUserAgent(String userAgent) {
         if (!isEmpty(userAgent)) {
-            this.userAgent = userAgent;
+            userAgent = userAgent;
         }
 
     }
 
     public void setClientCustomerId(String clientCustomerId) {
         if (!isEmpty(clientCustomerId)) {
-            this.clientCustomerId = clientCustomerId;
+            clientCustomerId = clientCustomerId;
         }
 
     }
 
     public void setClientId(String clientId) {
         if (!isEmpty(clientId)) {
-            this.clientId = clientId;
+            clientId = clientId;
         }
 
     }
 
     public void setClientSecretFile(String clientSecretFile) {
         if (!isEmpty(clientSecretFile)) {
-            this.clientSecretFile = clientSecretFile;
+            clientSecretFile = clientSecretFile;
         }
 
     }
@@ -532,90 +527,90 @@ public class AdWordsReport {
                 throw new IllegalArgumentException("Key file:" + keyFileStr + " cannot be read!");
             }
 
-            this.keyFile = f;
+            keyFile = f;
         }
 
     }
 
     public void setServiceAccountIdEmail(String accountEmail) {
         if (!isEmpty(accountEmail)) {
-            this.serviceAccountIdEmail = accountEmail;
+            serviceAccountIdEmail = accountEmail;
         }
 
     }
 
     public void setUserEmail(String adWordsAccountEmail) {
         if (!isEmpty(adWordsAccountEmail)) {
-            this.userEmail = adWordsAccountEmail;
+            userEmail = adWordsAccountEmail;
         }
 
     }
 
     public void setUseServiceAccount(boolean useServiceAccount) {
-        this.useServiceAccount = useServiceAccount;
+        useServiceAccount = useServiceAccount;
     }
 
     public void setAdwordsPropertyFilePath(String adwordsPropertyFilePath) {
         if (!isEmpty(adwordsPropertyFilePath)) {
-            this.adwordsPropertyFilePath = adwordsPropertyFilePath;
+            adwordsPropertyFilePath = adwordsPropertyFilePath;
         }
 
     }
 
     public void setUsePropertyFile(boolean usePropertyFile) {
-        this.usePropertyFile = usePropertyFile;
+        usePropertyFile = usePropertyFile;
     }
 
     public void setAwql(String awql) {
         if (!isEmpty(awql)) {
-            this.awql = awql.trim();
+            awql = awql.trim();
         }
 
     }
 
     public void setDownloadDir(String downloadDir) {
         if (!isEmpty(downloadDir)) {
-            this.downloadDir = downloadDir;
+            downloadDir = downloadDir;
         }
 
     }
 
     public void setUseClientId(boolean useClientId) {
-        this.useClientId = useClientId;
+        useClientId = useClientId;
     }
 
     public void setRefreshToken(String refreshToken) {
         if (!isEmpty(refreshToken)) {
-            this.refreshToken = refreshToken;
+            refreshToken = refreshToken;
         }
 
     }
 
     public void setClientSecret(String clientSecret) {
         if (!isEmpty(clientSecret)) {
-            this.clientSecret = clientSecret;
+            clientSecret = clientSecret;
         }
 
     }
 
     public String getReportName() {
-        return this.reportName;
+        return reportName;
     }
 
     public void setReportName(String reportName) {
         if (!isEmpty(reportName)) {
-            this.reportName = reportName;
+            reportName = reportName;
         }
 
     }
 
     public void deliverTotalsDataset(boolean deliverTotalsDataset) {
-        this.deliverTotalsDataset = deliverTotalsDataset;
+        deliverTotalsDataset = deliverTotalsDataset;
     }
 
     public void setTimeMillisOffsetToPast(Long timeMillisOffsetToPast) {
         if (timeMillisOffsetToPast != null) {
-            this.timeMillisOffsetToPast = timeMillisOffsetToPast;
+            timeMillisOffsetToPast = timeMillisOffsetToPast;
         }
 
     }
@@ -628,56 +623,56 @@ public class AdWordsReport {
     }
 
     public String getReportType() {
-        return this.reportType;
+        return reportType;
     }
 
     public void setReportType(String reportType) {
         if (!isEmpty(reportType)) {
-            this.reportType = reportType;
+            reportType = reportType;
         }
 
     }
 
     public boolean isDebug() {
-        return this.debug;
+        return debug;
     }
 
     public void setDebug(boolean debug) {
-        this.debug = debug;
+        debug = debug;
     }
 
     public void setDownloadFormat(String format) {
         if ("CSV".equalsIgnoreCase(format)) {
-            this.downloadFormat = DownloadFormat.CSV;
+            downloadFormat = DownloadFormat.CSV;
         } else if ("XML".equalsIgnoreCase(format)) {
-            this.downloadFormat = DownloadFormat.XML;
+            downloadFormat = DownloadFormat.XML;
         } else if ("TSV".equalsIgnoreCase(format)) {
-            this.downloadFormat = DownloadFormat.TSV;
+            downloadFormat = DownloadFormat.TSV;
         } else if ("GZIPPED_CSV".equalsIgnoreCase(format)) {
-            this.downloadFormat = DownloadFormat.GZIPPED_CSV;
+            downloadFormat = DownloadFormat.GZIPPED_CSV;
         } else if ("GZIPPED_XML".equalsIgnoreCase(format)) {
-            this.downloadFormat = DownloadFormat.GZIPPED_XML;
+            downloadFormat = DownloadFormat.GZIPPED_XML;
         } else {
             if (!"CSVFOREXCEL".equalsIgnoreCase(format)) {
                 throw new IllegalArgumentException("Download format:" + format + " is not supported!");
             }
 
-            this.downloadFormat = DownloadFormat.CSVFOREXCEL;
+            downloadFormat = DownloadFormat.CSVFOREXCEL;
         }
 
     }
 
     public boolean downloadIsAnArchive() {
-        return this.downloadFormat == DownloadFormat.GZIPPED_CSV || this.downloadFormat == DownloadFormat.GZIPPED_XML;
+        return downloadFormat == DownloadFormat.GZIPPED_CSV || downloadFormat == DownloadFormat.GZIPPED_XML;
     }
 
     public int getHttpStatus() {
-        return this.httpStatus;
+        return httpStatus;
     }
 
     public void info(String message) {
-        if (this.logger != null) {
-            this.logger.info(message);
+        if (logger != null) {
+            logger.info(message);
         } else {
             System.out.println("INFO:" + message);
         }
@@ -685,8 +680,8 @@ public class AdWordsReport {
     }
 
     public void debug(String message) {
-        if (this.logger != null) {
-            this.logger.debug(message);
+        if (logger != null) {
+            logger.debug(message);
         } else {
             System.out.println("DEBUG:" + message);
         }
@@ -694,8 +689,8 @@ public class AdWordsReport {
     }
 
     public void warn(String message) {
-        if (this.logger != null) {
-            this.logger.warn(message);
+        if (logger != null) {
+            logger.warn(message);
         } else {
             System.err.println("WARN:" + message);
         }
@@ -703,8 +698,8 @@ public class AdWordsReport {
     }
 
     public void error(String message, Exception e) {
-        if (this.logger != null) {
-            this.logger.error(message, e);
+        if (logger != null) {
+            logger.error(message, e);
         } else {
             System.err.println("ERROR:" + message);
         }
@@ -712,39 +707,39 @@ public class AdWordsReport {
     }
 
     public void setLogger(Logger logger) {
-        this.logger = logger;
+        logger = logger;
     }
 
     public void sendReportAsAWQL(boolean createAWQL) {
-        this.sendReportAsAWQL = createAWQL;
+        sendReportAsAWQL = createAWQL;
     }
 
     public void setAWQLWhereClause(String awqlWhereClause) {
         if (!isEmpty(awqlWhereClause)) {
-            this.awqlWhereClause = awqlWhereClause;
+            awqlWhereClause = awqlWhereClause;
         }
 
     }
 
     public boolean isUseAWQL() {
-        return this.useAWQL;
+        return useAWQL;
     }
 
     public void setUseAWQL(boolean useAWQL) {
-        this.useAWQL = useAWQL;
+        useAWQL = useAWQL;
     }
 
     public InputStream getResponseInputStream() {
-        return this.responseInputStream;
+        return responseInputStream;
     }
 
     public String getFields() {
-        return this.fields;
+        return fields;
     }
 
     public void setFields(String fields) {
         if (!isEmpty(fields)) {
-            this.fields = fields;
+            fields = fields;
         }
 
     }

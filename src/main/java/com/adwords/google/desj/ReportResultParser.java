@@ -72,11 +72,11 @@ public class ReportResultParser {
 
     public void initialize(InputStream in) throws Exception {
         if (in == null) {
-            this.initialised = false;
+            initialised = false;
         } else {
-            this.br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-            this.processHeaderRows();
-            this.initialised = true;
+            br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+            processHeaderRows();
+            initialised = true;
         }
 
     }
@@ -87,9 +87,9 @@ public class ReportResultParser {
             if (!f.exists()) {
                 throw new IllegalStateException("File " + f.getAbsolutePath() + " cannot be read!");
             } else {
-                this.br = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"));
-                this.processHeaderRows();
-                this.initialised = true;
+                br = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"));
+                processHeaderRows();
+                initialised = true;
             }
         } else {
             throw new IllegalArgumentException("filePath cannot be null or empty.");
@@ -97,9 +97,9 @@ public class ReportResultParser {
     }
 
     public void close() {
-        if (this.br != null) {
+        if (br != null) {
             try {
-                this.br.close();
+                br.close();
             } catch (IOException var2) {
                 ;
             }
@@ -109,14 +109,14 @@ public class ReportResultParser {
 
     public void setMetrics(String metrics) {
         if (metrics != null && !metrics.trim().isEmpty()) {
-            this.requestedMetricNames = new ArrayList();
+            requestedMetricNames = new ArrayList();
             String[] metricArray = metrics.split("[,;]");
             String[] arr$ = metricArray;
             int len$ = metricArray.length;
 
             for (int i$ = 0; i$ < len$; ++i$) {
                 String metric = arr$[i$];
-                this.requestedMetricNames.add(metric);
+                requestedMetricNames.add(metric);
             }
 
         } else {
@@ -125,168 +125,168 @@ public class ReportResultParser {
     }
 
     public void setFields(String fields) {
-        this.setDimensions(fields);
+        setDimensions(fields);
     }
 
     public void setDimensions(String dimensions) {
         if (dimensions != null && !dimensions.trim().isEmpty()) {
-            this.requestedDimensionNames = new ArrayList();
+            requestedDimensionNames = new ArrayList();
             String[] dimensionArray = dimensions.split("[,;]");
             String[] arr$ = dimensionArray;
             int len$ = dimensionArray.length;
 
             for (int i$ = 0; i$ < len$; ++i$) {
                 String dimension = arr$[i$];
-                this.requestedDimensionNames.add(dimension.trim());
+                requestedDimensionNames.add(dimension.trim());
             }
 
-            this.countDimensions = this.requestedDimensionNames.size();
+            countDimensions = requestedDimensionNames.size();
         } else {
             throw new IllegalArgumentException("dimensions cannot be null or empty");
         }
     }
 
     private void processHeaderRows() throws Exception {
-        this.dimensionsInfo = null;
-        this.metricsInfo = null;
-        this.filtersInfo = null;
-        this.segmentInfo = null;
-        this.startDateInfo = null;
-        this.endDateInfo = null;
-        this.profileIdInfo = null;
-        String line = this.br.readLine();
+        dimensionsInfo = null;
+        metricsInfo = null;
+        filtersInfo = null;
+        segmentInfo = null;
+        startDateInfo = null;
+        endDateInfo = null;
+        profileIdInfo = null;
+        String line = br.readLine();
         if (line != null) {
-            this.headerLine = line;
-            this.validFile = line != null;
-            if (this.headerLine != null) {
-                this.setupHeaderPositions();
+            headerLine = line;
+            validFile = line != null;
+            if (headerLine != null) {
+                setupHeaderPositions();
             }
         } else {
-            this.validFile = false;
+            validFile = false;
         }
 
     }
 
     private void setupHeaderPositions() throws Exception {
         int pos = 0;
-        this.headers = new ArrayList();
-        this.data = getChars(this.headerLine);
-        this.lastPosDel = 0;
-        this.lastDelimiterIndex = 0;
+        headers = new ArrayList();
+        data = getChars(headerLine);
+        lastPosDel = 0;
+        lastDelimiterIndex = 0;
 
         while (true) {
-            String column = this.extractDataAtDelimiter(pos);
+            String column = extractDataAtDelimiter(pos);
             if (column == null || column.isEmpty()) {
                 return;
             }
 
-            this.headers.add(column.toLowerCase());
+            headers.add(column.toLowerCase());
             ++pos;
         }
     }
 
     public boolean hasNextPlainRecord() throws IOException {
-        if (this.initialised && this.validFile) {
-            this.currentLine = this.br.readLine();
-            if (this.currentLine != null) {
-                return !this.currentLine.trim().isEmpty();
+        if (initialised && validFile) {
+            currentLine = br.readLine();
+            if (currentLine != null) {
+                return !currentLine.trim().isEmpty();
             } else {
-                this.close();
+                close();
                 return false;
             }
         } else {
-            this.close();
+            close();
             return false;
         }
     }
 
     public List<String> getNextPlainRecord() throws Exception {
-        if (this.currentLine == null) {
+        if (currentLine == null) {
             throw new IllegalStateException("call hasNextPlainRecord before and check return true!");
         } else {
             List<String> record = new ArrayList();
-            this.data = getChars(this.currentLine);
-            this.lastPosDel = 0;
-            this.lastDelimiterIndex = 0;
+            data = getChars(currentLine);
+            lastPosDel = 0;
+            lastDelimiterIndex = 0;
 
             String metric;
             int pos;
-            for (int i = 0; i < this.requestedDimensionNames.size(); ++i) {
-                metric = (String) this.requestedDimensionNames.get(i);
-                if (this.configurePositionByHeaderLine) {
-                    pos = this.headers.indexOf(metric.toLowerCase());
+            for (int i = 0; i < requestedDimensionNames.size(); ++i) {
+                metric = (String) requestedDimensionNames.get(i);
+                if (configurePositionByHeaderLine) {
+                    pos = headers.indexOf(metric.toLowerCase());
                     if (pos == -1) {
                         throw new Exception("Dimension " + metric + " not found in header line!");
                     }
 
-                    record.add(this.extractDataAtDelimiter(pos));
+                    record.add(extractDataAtDelimiter(pos));
                 } else {
-                    record.add(this.extractDataAtDelimiter(i));
+                    record.add(extractDataAtDelimiter(i));
                 }
             }
 
-            if (this.requestedMetricNames != null) {
-                Iterator i$ = this.requestedMetricNames.iterator();
+            if (requestedMetricNames != null) {
+                Iterator i$ = requestedMetricNames.iterator();
 
                 while (i$.hasNext()) {
                     metric = (String) i$.next();
-                    pos = this.headers.indexOf(metric.toLowerCase());
+                    pos = headers.indexOf(metric.toLowerCase());
                     if (pos == -1) {
                         throw new Exception("Metric " + metric + " not found in header line!");
                     }
 
-                    record.add(this.extractDataAtDelimiter(pos));
+                    record.add(extractDataAtDelimiter(pos));
                 }
             }
 
-            ++this.currentPlainRowIndex;
+            ++currentPlainRowIndex;
             return record;
         }
     }
 
     private void setMaxCountNormalizedValues(int count) {
-        if (count > this.maxCountNormalizedValues) {
-            this.maxCountNormalizedValues = count;
+        if (count > maxCountNormalizedValues) {
+            maxCountNormalizedValues = count;
         }
 
     }
 
     public DimensionValue getCurrentDimensionValue() {
-        if (this.currentNormalizedValueIndex == 0) {
+        if (currentNormalizedValueIndex == 0) {
             throw new IllegalStateException("Call nextNormalizedRecord() at first!");
         } else {
-            return this.currentNormalizedValueIndex <= this.currentResultRowDimensionValues.size() ? (DimensionValue) this.currentResultRowDimensionValues.get(this.currentNormalizedValueIndex - 1) : null;
+            return currentNormalizedValueIndex <= currentResultRowDimensionValues.size() ? (DimensionValue) currentResultRowDimensionValues.get(currentNormalizedValueIndex - 1) : null;
         }
     }
 
     public Date getCurrentDate() {
-        return this.currentDate;
+        return currentDate;
     }
 
     public MetricValue getCurrentMetricValue() {
-        if (this.currentNormalizedValueIndex == 0) {
+        if (currentNormalizedValueIndex == 0) {
             throw new IllegalStateException("Call nextNormalizedRecord() at first!");
         } else {
-            return this.currentNormalizedValueIndex <= this.currentResultRowMetricValues.size() ? (MetricValue) this.currentResultRowMetricValues.get(this.currentNormalizedValueIndex - 1) : null;
+            return currentNormalizedValueIndex <= currentResultRowMetricValues.size() ? (MetricValue) currentResultRowMetricValues.get(currentNormalizedValueIndex - 1) : null;
         }
     }
 
     public boolean nextNormalizedRecord() throws Exception {
-        if (!this.initialised) {
+        if (!initialised) {
             return false;
         } else {
-            if (this.maxCountNormalizedValues == 0 && this.hasNextPlainRecord()) {
-                this.buildNormalizedRecords(this.getNextPlainRecord());
+            if (maxCountNormalizedValues == 0 && hasNextPlainRecord()) {
+                buildNormalizedRecords(getNextPlainRecord());
             }
 
-            if (this.maxCountNormalizedValues > 0) {
-                if (this.currentNormalizedValueIndex < this.maxCountNormalizedValues) {
-                    ++this.currentNormalizedValueIndex;
+            if (maxCountNormalizedValues > 0) {
+                if (currentNormalizedValueIndex < maxCountNormalizedValues) {
+                    ++currentNormalizedValueIndex;
                     return true;
                 }
 
-                if (this.currentNormalizedValueIndex == this.maxCountNormalizedValues && this.hasNextPlainRecord() && this.buildNormalizedRecords(this.getNextPlainRecord())) {
-                    ++this.currentNormalizedValueIndex;
+                if (currentNormalizedValueIndex == maxCountNormalizedValues && hasNextPlainRecord() && buildNormalizedRecords(getNextPlainRecord())) {
+                    ++currentNormalizedValueIndex;
                     return true;
                 }
             }
@@ -296,27 +296,27 @@ public class ReportResultParser {
     }
 
     private boolean buildNormalizedRecords(List<String> oneRow) {
-        this.maxCountNormalizedValues = 0;
-        this.currentNormalizedValueIndex = 0;
-        this.buildDimensionValues(oneRow);
-        this.buildMetricValues(oneRow);
-        return this.maxCountNormalizedValues > 0;
+        maxCountNormalizedValues = 0;
+        currentNormalizedValueIndex = 0;
+        buildDimensionValues(oneRow);
+        buildMetricValues(oneRow);
+        return maxCountNormalizedValues > 0;
     }
 
     private List<DimensionValue> buildDimensionValues(List<String> oneRow) {
         int index = 0;
-        this.currentDate = null;
+        currentDate = null;
 
         ArrayList oneRowDimensionValues;
-        for (oneRowDimensionValues = new ArrayList(); index < this.requestedDimensionNames.size(); ++index) {
+        for (oneRowDimensionValues = new ArrayList(); index < requestedDimensionNames.size(); ++index) {
             DimensionValue dm = new DimensionValue();
-            dm.name = (String) this.requestedDimensionNames.get(index);
+            dm.name = (String) requestedDimensionNames.get(index);
             dm.value = (String) oneRow.get(index);
-            dm.rowNum = this.currentPlainRowIndex;
-            if (this.excludeDate && "Day".equalsIgnoreCase(dm.name.trim().toLowerCase())) {
+            dm.rowNum = currentPlainRowIndex;
+            if (excludeDate && "Day".equalsIgnoreCase(dm.name.trim().toLowerCase())) {
                 try {
                     if (dm.value != null) {
-                        this.currentDate = this.dateFormatter.parse(dm.value);
+                        currentDate = dateFormatter.parse(dm.value);
                     }
                 } catch (ParseException var6) {
                     throw new RuntimeException("Day value=" + dm.value + " cannot be parsed as Date.", var6);
@@ -326,8 +326,8 @@ public class ReportResultParser {
             }
         }
 
-        this.currentResultRowDimensionValues = oneRowDimensionValues;
-        this.setMaxCountNormalizedValues(this.currentResultRowDimensionValues.size());
+        currentResultRowDimensionValues = oneRowDimensionValues;
+        setMaxCountNormalizedValues(currentResultRowDimensionValues.size());
         return oneRowDimensionValues;
     }
 
@@ -335,11 +335,11 @@ public class ReportResultParser {
         int index = 0;
 
         ArrayList oneRowMetricValues;
-        for (oneRowMetricValues = new ArrayList(); index < this.requestedMetricNames.size(); ++index) {
+        for (oneRowMetricValues = new ArrayList(); index < requestedMetricNames.size(); ++index) {
             MetricValue mv = new MetricValue();
-            mv.name = (String) this.requestedMetricNames.get(index);
-            mv.rowNum = this.currentPlainRowIndex;
-            String valueStr = (String) oneRow.get(index + this.countDimensions);
+            mv.name = (String) requestedMetricNames.get(index);
+            mv.rowNum = currentPlainRowIndex;
+            String valueStr = (String) oneRow.get(index + countDimensions);
 
             try {
                 mv.value = Util.convertToDouble(valueStr, Locale.ENGLISH.toString());
@@ -349,57 +349,57 @@ public class ReportResultParser {
             }
         }
 
-        this.currentResultRowMetricValues = oneRowMetricValues;
-        this.setMaxCountNormalizedValues(this.currentResultRowMetricValues.size());
+        currentResultRowMetricValues = oneRowMetricValues;
+        setMaxCountNormalizedValues(currentResultRowMetricValues.size());
         return oneRowMetricValues;
     }
 
     private String extractDataAtDelimiter(int fieldNum) throws Exception {
         String value = null;
-        if (fieldNum < this.lastDelimiterIndex) {
-            throw new Exception("Current field index " + fieldNum + " is lower then last field index:" + this.lastDelimiterIndex);
+        if (fieldNum < lastDelimiterIndex) {
+            throw new Exception("Current field index " + fieldNum + " is lower then last field index:" + lastDelimiterIndex);
         } else {
-            int countDelimiters = this.lastDelimiterIndex;
+            int countDelimiters = lastDelimiterIndex;
             boolean inField = false;
             boolean atEnclosureStart = false;
             boolean atEnclosureStop = false;
             boolean atDelimiter = false;
-            boolean useEnclosure = this.enclosureChars.length > 0;
+            boolean useEnclosure = enclosureChars.length > 0;
             boolean fieldStartsWithEnclosure = false;
             boolean continueField = false;
-            int currPos = this.lastPosDel;
+            int currPos = lastPosDel;
             StringBuilder sb = new StringBuilder();
 
-            while (currPos < this.data.length && countDelimiters <= fieldNum) {
+            while (currPos < data.length && countDelimiters <= fieldNum) {
                 if (atEnclosureStart) {
                     atEnclosureStart = false;
                     fieldStartsWithEnclosure = true;
-                    currPos += this.enclosureChars.length;
-                    atEnclosureStop = startsWith(this.data, this.enclosureChars, currPos);
+                    currPos += enclosureChars.length;
+                    atEnclosureStop = startsWith(data, enclosureChars, currPos);
                     if (!atEnclosureStop) {
                         inField = true;
                     }
                 } else if (atEnclosureStop) {
                     atEnclosureStop = false;
-                    currPos += this.enclosureChars.length;
-                    atDelimiter = startsWith(this.data, this.delimiterChars, currPos);
-                    if (!atDelimiter && currPos < this.data.length) {
-                        if (!this.allowEnclosureInText) {
+                    currPos += enclosureChars.length;
+                    atDelimiter = startsWith(data, delimiterChars, currPos);
+                    if (!atDelimiter && currPos < data.length) {
+                        if (!allowEnclosureInText) {
                             throw new Exception("Delimiter after enclosure stop missing at position:" + currPos + " in field number:" + fieldNum);
                         }
 
                         inField = true;
                         continueField = true;
-                        sb.append(this.enclosureChars);
+                        sb.append(enclosureChars);
                     }
                 } else if (atDelimiter) {
                     ++countDelimiters;
                     fieldStartsWithEnclosure = false;
-                    currPos += this.delimiterChars.length;
-                    atDelimiter = startsWith(this.data, this.delimiterChars, currPos);
+                    currPos += delimiterChars.length;
+                    atDelimiter = startsWith(data, delimiterChars, currPos);
                     if (!atDelimiter) {
-                        if (useEnclosure && currPos < this.data.length) {
-                            atEnclosureStart = startsWith(this.data, this.enclosureChars, currPos);
+                        if (useEnclosure && currPos < data.length) {
+                            atEnclosureStart = startsWith(data, enclosureChars, currPos);
                             if (!atEnclosureStart) {
                                 inField = true;
                             }
@@ -409,10 +409,10 @@ public class ReportResultParser {
                     }
                 } else if (!inField) {
                     if (useEnclosure) {
-                        atEnclosureStart = startsWith(this.data, this.enclosureChars, currPos);
+                        atEnclosureStart = startsWith(data, enclosureChars, currPos);
                     }
 
-                    atDelimiter = startsWith(this.data, this.delimiterChars, currPos);
+                    atDelimiter = startsWith(data, delimiterChars, currPos);
                     if (!atEnclosureStart && !atDelimiter) {
                         inField = true;
                     }
@@ -421,21 +421,21 @@ public class ReportResultParser {
                         sb.setLength(0);
                     }
 
-                    for (continueField = false; currPos < this.data.length; ++currPos) {
+                    for (continueField = false; currPos < data.length; ++currPos) {
                         if (fieldStartsWithEnclosure) {
-                            atEnclosureStop = startsWith(this.data, this.enclosureChars, currPos);
+                            atEnclosureStop = startsWith(data, enclosureChars, currPos);
                             if (atEnclosureStop) {
                                 break;
                             }
                         } else {
-                            atDelimiter = startsWith(this.data, this.delimiterChars, currPos);
+                            atDelimiter = startsWith(data, delimiterChars, currPos);
                             if (atDelimiter || atEnclosureStart) {
                                 break;
                             }
                         }
 
                         if (countDelimiters == fieldNum) {
-                            sb.append(this.data[currPos]);
+                            sb.append(data[currPos]);
                         }
                     }
 
@@ -446,45 +446,45 @@ public class ReportResultParser {
                 }
             }
 
-            this.lastPosDel = currPos;
-            this.lastDelimiterIndex = fieldNum + 1;
+            lastPosDel = currPos;
+            lastDelimiterIndex = fieldNum + 1;
             return value;
         }
     }
 
     public String getProfileIdInfo() {
-        return this.profileIdInfo;
+        return profileIdInfo;
     }
 
     public String getDimensionsInfo() {
-        return this.dimensionsInfo;
+        return dimensionsInfo;
     }
 
     public String getMetricsInfo() {
-        return this.metricsInfo;
+        return metricsInfo;
     }
 
     public String getFiltersInfo() {
-        return this.filtersInfo;
+        return filtersInfo;
     }
 
     public String getSegmentInfo() {
-        return this.segmentInfo;
+        return segmentInfo;
     }
 
     public String getStartDateInfo() {
-        return this.startDateInfo;
+        return startDateInfo;
     }
 
     public String getEndDateInfo() {
-        return this.endDateInfo;
+        return endDateInfo;
     }
 
     public boolean isExcludeDate() {
-        return this.excludeDate;
+        return excludeDate;
     }
 
     public void setExcludeDate(boolean excludeDate) {
-        this.excludeDate = excludeDate;
+        excludeDate = excludeDate;
     }
 }

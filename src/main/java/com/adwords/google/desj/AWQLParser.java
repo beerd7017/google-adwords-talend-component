@@ -35,28 +35,28 @@ public class AWQLParser {
     }
 
     public AWQLParser parse(String awql) {
-        this.awql = awql.trim();
-        this.findFields();
-        this.findReportType();
+        awql = awql.trim();
+        findFields();
+        findReportType();
         return this;
     }
 
     private void findReportType() {
-        int pos0 = this.awql.toLowerCase().indexOf("from");
+        int pos0 = awql.toLowerCase().indexOf("from");
         if (pos0 == -1) {
             throw new IllegalStateException("The given AWQL does not contains a \"from\" clause. The \"from\" clause is mandatory in AdHock reports!");
         } else {
             pos0 += "from".length();
-            int pos1 = this.awql.toLowerCase().indexOf("where");
+            int pos1 = awql.toLowerCase().indexOf("where");
             if (pos1 == -1) {
-                pos1 = this.awql.toLowerCase().indexOf("during");
+                pos1 = awql.toLowerCase().indexOf("during");
             }
 
             if (pos1 == -1) {
                 throw new IllegalStateException("The given AWQL does not contains a \"during\" clause. The \"during\" clause is mandatory in AdHock reports!");
             } else {
-                this.reportType = this.awql.substring(pos0, pos1).trim();
-                if (this.reportType.isEmpty()) {
+                reportType = awql.substring(pos0, pos1).trim();
+                if (reportType.isEmpty()) {
                     throw new IllegalStateException("The given AWQL does not contains a report-type in the \"from\" clause!");
                 }
             }
@@ -64,45 +64,45 @@ public class AWQLParser {
     }
 
     private void findFields() {
-        int pos0 = this.awql.toLowerCase().indexOf("select");
+        int pos0 = awql.toLowerCase().indexOf("select");
         if (pos0 == -1) {
             throw new IllegalStateException("The given AWQL does not contains a \"select\" clause. The \"select\" clause is mandatory in AdHock reports!");
         } else {
             pos0 += "select".length();
-            int pos1 = this.awql.toLowerCase().indexOf("from");
+            int pos1 = awql.toLowerCase().indexOf("from");
             if (pos1 == -1) {
                 throw new IllegalStateException("The given AWQL does not contains a \"from\" clause. The \"from\" clause is mandatory in AdHock reports!");
             } else {
-                this.fields = this.awql.substring(pos0, pos1).trim();
-                if (this.fields.isEmpty()) {
+                fields = awql.substring(pos0, pos1).trim();
+                if (fields.isEmpty()) {
                     throw new IllegalStateException("The given AWQL does not contains fields in the \"select\" clause!");
                 } else {
-                    this.buildFieldList();
+                    buildFieldList();
                 }
             }
         }
     }
 
     private void buildFieldList() {
-        this.fieldList = new ArrayList();
-        StringTokenizer st = new StringTokenizer(this.fields, ",");
+        fieldList = new ArrayList();
+        StringTokenizer st = new StringTokenizer(fields, ",");
 
         while (st.hasMoreTokens()) {
             String field = st.nextToken().trim();
-            this.fieldList.add(field);
+            fieldList.add(field);
         }
 
     }
 
     public String getReportType() {
-        return this.reportType;
+        return reportType;
     }
 
     public String getFieldsAsString() {
-        return this.fields;
+        return fields;
     }
 
     public List<String> getFieldsAsList() {
-        return this.fieldList;
+        return fieldList;
     }
 }

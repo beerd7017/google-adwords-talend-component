@@ -9,6 +9,6 @@ public class MetricValue {
     }
 
     public String toString() {
-        return "METRIC #" + this.rowNum + " " + this.name + "=" + this.value;
+        return "METRIC #" + rowNum + " " + name + "=" + value;
     }
 }

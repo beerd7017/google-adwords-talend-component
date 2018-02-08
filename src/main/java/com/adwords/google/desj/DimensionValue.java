@@ -9,7 +9,7 @@ public class DimensionValue {
     }
 
     public String toString() {
-        return "DIM #" + this.rowNum + " " + this.name + "=" + this.value;
+        return "DIM #" + rowNum + " " + name + "=" + value;
     }
 }
 
