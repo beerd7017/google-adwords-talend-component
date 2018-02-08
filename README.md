@@ -3,7 +3,7 @@
 ## Purpose
 This repository contains the source code for a Talend Component to make integration with Google Adwords easy. 
 
-##Rules of the Repository
+## Rules of the Repository
 * Master branch is production, period.
 * Do not commit to master, please work off the development branch.
 * When working locally, try to work in feature branches.
