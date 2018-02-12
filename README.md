@@ -1,6 +1,6 @@
 # Welcome to the Google Adwords Talend Component Repository
 
-**Warning! This component has not yet been fully tested or completed as of 2/11/2018. Alpha release is planned to be ready by 2/23/2018.**
+**Warning! This component requires JRE 9 as a runtime which is not supported by Talend Data Services Platform.**
 
 ## Purpose
 This repository contains the source code for a Talend Component to make integration with Google Adwords easy. 
