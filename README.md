@@ -1,5 +1,7 @@
 # Welcome to the Google Adwords Talend Component Repository
 
+**Warning! This component has not yet been fully tested or completed as of 2/11/2018. Alpha release is planned to be ready by 2/23/2018.**
+
 ## Purpose
 This repository contains the source code for a Talend Component to make integration with Google Adwords easy. 
 
